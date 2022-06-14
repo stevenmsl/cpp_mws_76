@@ -17,6 +17,10 @@ using namespace std;
   - assume the window is [start, end] on s.
   - grow the window by increasing the end to include
     all chars from t then stop
+    - use a hash table to record the frequency
+      of each char
+    - count how many chars are left in T but not
+      included in the window
   - shrink the window by increasing start while
     the window still contains all chars from t
     - record the min length of the window during the
@@ -27,35 +31,45 @@ using namespace std;
 
 string Solution::minWindow(string s, string t)
 {
-  auto tm = unordered_map<char, int>();
-  /* total number of chars in t */
-  auto n = t.size();
-  for (auto c : t)
-    tm[c]++;
 
-  auto minLen = INT_MAX;
-  string result;
-  for (auto start = 0, end = 0; end < s.size(); end++)
+  const int n = s.length();
+  const int m = t.length();
+  vector<int> freq(128);
+  for (char c : t)
+    ++freq[c];
+  int start = 0;
+  int minLen = INT_MAX;
+  for (int i = 0, j = 0, remain = m; j < n; ++j)
   {
-    /* expand the window until it includes all chars in t
-       - n will be reduced to zero if this is the case
+    /* negative value of freq
+       - s = "aaabbb" t = "bb"
+       - freq['a'] = -3, freq['b'] = -1
     */
-    if (tm.count(s[end]))
-      tm[s[end]]--, n--;
-
-    while (n == 0)
+    /* in case s has more than t for
+       the same char
+    */
+    if (--freq[s[j]] >= 0)
+      --remain;
+    /* the window includes all chars from t */
+    while (remain == 0)
     {
-      auto len = end - start + 1;
-      if (len < minLen)
-        minLen = len, result = s.substr(start, len);
-      /*start shrinking the window */
-      if (tm.count(s[start]))
-        /* put the count back */
-        tm[s[start]]++, n++;
-
-      start++;
+      if (j - i + 1 < minLen)
+      {
+        minLen = j - i + 1;
+        start = i;
+      }
+      /*
+        - for the chars not in t, the best they 
+          can do is to come back to 0
+        - for others, once they become one we
+          will exit the loop as we no
+          longer includes all the char
+          from t
+      */
+      if (++freq[s[i++]] == 1)
+        ++remain;
     }
   }
-
-  return result;
+  /* to achieve O(n), produce the string at the very end */
+  return minLen == INT_MAX ? "" : s.substr(start, minLen);
 }
