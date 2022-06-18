@@ -34,6 +34,9 @@ string Solution::minWindow(string s, string t)
 
   const int n = s.length();
   const int m = t.length();
+  /* use negative values to record the frequency
+     for chars in s
+   */
   vector<int> freq(128);
   for (char c : t)
     ++freq[c];
@@ -59,12 +62,14 @@ string Solution::minWindow(string s, string t)
         start = i;
       }
       /*
-        - for the chars not in t, the best they 
+        - for the chars not in t, the best they
           can do is to come back to 0
-        - for others, once they become one we
-          will exit the loop as we no
-          longer includes all the char
-          from t
+        - for others that are both in s and t,
+          once the frequency becomes zero,
+          we have counted off the number of
+          occurrences in s. Once it becomes 1,
+          we are counting off the number of
+          occurrences in t
       */
       if (++freq[s[i++]] == 1)
         ++remain;
